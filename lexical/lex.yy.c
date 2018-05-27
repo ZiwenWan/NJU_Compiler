@@ -552,7 +552,7 @@ char *yytext;
 #line 2 "lexical.l"
 #include <stdio.h>
 #include "parsertree.h"
-#define YYSTYPE ParserNode*
+#define YYSTYPE ParserTreeNode*
 #include "syntax.tab.h"
 int yycolumn=1;
 #define YY_USER_ACTION\

@@ -3,6 +3,7 @@
 	//#include "lex.yy.c"
 	//#include "lex.yy.h"
 	#include "parsertree.h"
+	#include "../semantic/covert.h"
 	extern int LegalFlag;
 	extern int yylineno;
 	int previous_lineno;
@@ -10,7 +11,7 @@
 %}
 
 %union{
-	struct ParserNode* node;
+	struct ParserTreeNode* node;
 }
 
 %token <node>INT

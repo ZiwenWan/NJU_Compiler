@@ -2,8 +2,9 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../semantic/symbolTable.h"
 #include "parsertree.h"
-ParserNode* root=NULL;
+ParserTreeNode* root=NULL;
 char* symbolsTable[48] =
                 {"INT", "FLOAT", "ID", "SEMI", "COMMA", "ASSIGNOP", "RELOP",
                 "PLUS", "MINUS", "STAR", "DIV", "AND", "OR", "DOT", "NOT", "TYPE",
@@ -18,8 +19,9 @@ char* typeTable[2] = {"int", "float"};
 char* relopTable[6] = {"==", "<", ">", "!=", "<=", ">="};
 
 
-ParserNode* GenerateIDNode(int lineno,char* text){
-	ParserNode* ret=(ParserNode*)malloc(sizeof(ParserNode));
+ParserTreeNode* GenerateIDNode(int lineno,char* text){
+	//printf("Begin ID:%s\n",text);
+	ParserTreeNode* ret=(ParserTreeNode*)malloc(sizeof(ParserTreeNode));
         ret->m_NodeType=Terminal;
         ret->m_SyntaxType=AID;
         ret->m_lineno=lineno;
@@ -30,11 +32,13 @@ ParserNode* GenerateIDNode(int lineno,char* text){
         ret->m_nextsibiling=NULL;
 	ret->IDname=malloc(strlen(text));
 	strcpy(ret->IDname,text);
+	//printf("End ID:%s\n",text);
         return ret;
 } 
 
-ParserNode* GenerateNormalTerminalNode(int lineno,SyntaxType typex){
-	ParserNode* ret=(ParserNode*)malloc(sizeof(ParserNode));
+ParserTreeNode* GenerateNormalTerminalNode(int lineno,SyntaxType typex){
+	//printf("Begin %s\n",symbolsTable[typex]);
+	ParserTreeNode* ret=(ParserTreeNode*)malloc(sizeof(ParserTreeNode));
 	ret->m_NodeType=Terminal;
 	ret->m_SyntaxType=typex;
 	ret->m_lineno=lineno;
@@ -43,11 +47,12 @@ ParserNode* GenerateNormalTerminalNode(int lineno,SyntaxType typex){
 	ret->m_parent=NULL;
 	ret->m_firstchild=NULL;
 	ret->m_nextsibiling=NULL;
+	//printf("End %s\n",symbolsTable[typex]);
 	return ret;
 }
 
-ParserNode* GenerateRelopNode(int lineno,char* text){
-        ParserNode* ret=(ParserNode*)malloc(sizeof(ParserNode));
+ParserTreeNode* GenerateRelopNode(int lineno,char* text){
+        ParserTreeNode* ret=(ParserTreeNode*)malloc(sizeof(ParserTreeNode));
         ret->m_NodeType=Terminal;
         ret->m_SyntaxType=ARELOP;
         ret->m_lineno=lineno;
@@ -65,8 +70,8 @@ ParserNode* GenerateRelopNode(int lineno,char* text){
         return ret;
 }
 
-ParserNode* GenerateDummyNode(SyntaxType typex){
-        ParserNode* ret=(ParserNode*)malloc(sizeof(ParserNode));
+ParserTreeNode* GenerateDummyNode(SyntaxType typex){
+        ParserTreeNode* ret=(ParserTreeNode*)malloc(sizeof(ParserTreeNode));
         ret->m_NodeType=Dummy;
         ret->m_SyntaxType=typex;
         ret->m_depth=0;
@@ -77,8 +82,8 @@ ParserNode* GenerateDummyNode(SyntaxType typex){
         return ret;
 }
 
-ParserNode* GenerateFloatNode(int lineno,char* text){
-        ParserNode* ret=(ParserNode*)malloc(sizeof(ParserNode));
+ParserTreeNode* GenerateFloatNode(int lineno,char* text){
+        ParserTreeNode* ret=(ParserTreeNode*)malloc(sizeof(ParserTreeNode));
         ret->m_NodeType=Terminal;
         ret->m_SyntaxType=AFLOAT;
         ret->m_lineno=lineno;
@@ -87,14 +92,14 @@ ParserNode* GenerateFloatNode(int lineno,char* text){
         ret->m_parent=NULL;
         ret->m_firstchild=NULL;
         ret->m_nextsibiling=NULL;
-	ret->float_value=(float)strtod(text,NULL);
+		ret->float_value=(float)strtod(text,NULL);
         return ret;
 }
 
 
 
-ParserNode* GenerateIntNode(int lineno,char* text){
-	ParserNode* ret=(ParserNode*)malloc(sizeof(ParserNode));
+ParserTreeNode* GenerateIntNode(int lineno,char* text){
+	ParserTreeNode* ret=(ParserTreeNode*)malloc(sizeof(ParserTreeNode));
         ret->m_NodeType=Terminal;
         ret->m_SyntaxType=AINT;
         ret->m_lineno=lineno;
@@ -118,8 +123,8 @@ ParserNode* GenerateIntNode(int lineno,char* text){
 
 }
 
-ParserNode* GenerateTypeNode(int lineno,char* text){
-        ParserNode* ret=(ParserNode*)malloc(sizeof(ParserNode));
+ParserTreeNode* GenerateTypeNode(int lineno,char* text){
+        ParserTreeNode* ret=(ParserTreeNode*)malloc(sizeof(ParserTreeNode));
         ret->m_NodeType=Terminal;
         ret->m_SyntaxType=ATYPE;
         ret->m_lineno=lineno;
@@ -133,13 +138,23 @@ ParserNode* GenerateTypeNode(int lineno,char* text){
         return ret;
 }
 
-ParserNode* GenerateVariableNode(SyntaxType typex,int childrennum,...){
-	ParserNode* ret=(ParserNode*)malloc(sizeof(ParserNode));
+char* getIDfromOptTag(ParserTreeNode* x){
+	ParserTreeNode* temp=x->m_firstchild;
+	if (temp->m_NodeType==Dummy) return NULL;
+	else return temp->IDname;
+}
+
+char* getIDfromTag(ParserTreeNode* x){
+	ParserTreeNode* temp=x->m_firstchild;
+	return temp->IDname;
+}
+ParserTreeNode* GenerateVariableNode(SyntaxType typex,int childrennum,...){
+	ParserTreeNode* ret=(ParserTreeNode*)malloc(sizeof(ParserTreeNode));
 	ret->m_NodeType=Variable;
 	ret->m_SyntaxType=typex;
 	ret->m_childrennum=childrennum;
-	ParserNode* child;
-	ParserNode* previous;
+	ParserTreeNode* child;
+	ParserTreeNode* previous;
 	ret->m_nextsibiling=NULL;
 	
 
@@ -149,7 +164,7 @@ ParserNode* GenerateVariableNode(SyntaxType typex,int childrennum,...){
 	int is_dummy=1;
 	int met_first=0;
 	for (i=0;i<childrennum;i++){
-		child=va_arg(arg_ptr,ParserNode*);
+		child=va_arg(arg_ptr,ParserTreeNode*);
 		if (i==0)
 			ret->m_firstchild=child;
 		else
@@ -168,10 +183,23 @@ ParserNode* GenerateVariableNode(SyntaxType typex,int childrennum,...){
 	
 //	if (is_dummy==1)
 //		ret->m_NodeType=Dummy;
+
+
+	/*if (typex==AStructSpecifier){
+		child=ret->m_firstchild;
+		child=child->m_nextsibiling;
+		char* structname=getIDfromOptTag(child);
+		if (structname!=NULL){
+			child=child->m_nextsibiling;
+			child=child->m_nextsibiling;
+			InsertStructDef(structname,CovertDefList2FieldList(child));
+
+		}
+	}*/
 	return ret;
 }
 
-void PrintTree(ParserNode* x,int d){
+void PrintTree(ParserTreeNode* x,int d){
 	if (x->m_NodeType==Dummy){
 	//	printf("Dummy\n");
 		return;
@@ -205,7 +233,7 @@ void PrintTree(ParserNode* x,int d){
 			printf("%s\n",symbolsTable[x->m_SyntaxType]);
 		}
 	}
-	ParserNode* child;
+	ParserTreeNode* child;
 	if (x->m_childrennum>0)
 		child=x->m_firstchild;
 	for (i=0;i<x->m_childrennum;i++){

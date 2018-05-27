@@ -20,16 +20,16 @@ extern  char* typeTable[2];
 
 extern char* relopTable[6];
 
-struct ParserNode
+struct ParserTreeNode
 {
     NodeType m_NodeType;
     SyntaxType m_SyntaxType;
     int m_lineno;
     int m_depth;
     int m_childrennum;
-    struct ParsingNode* m_firstchild;
-    struct ParsingNode* m_parent;
-    struct ParsingNode* m_nextsibiling;
+    struct ParserTreeNode* m_firstchild;
+    struct ParserTreeNode* m_parent;
+    struct ParserTreeNode* m_nextsibiling;
 	union
 	{
 		char* IDname; 
@@ -39,16 +39,19 @@ struct ParserNode
     		RelopType relop_value; 
 	};   
 };
-typedef struct ParserNode ParserNode;
+typedef struct ParserTreeNode ParserTreeNode;
 
-extern ParserNode* root;
+extern ParserTreeNode* root;
 
-ParserNode* GenerateVariableNode(SyntaxType typex,int childrenNum,...);
-ParserNode* GenerateTypeNode(int lineno,char* text);
-ParserNode* GenerateIntNode(int lineno,char* text);
-ParserNode* GenerateFloatNode(int lineno,char* text);
-ParserNode* GenerateDummyNode(SyntaxType typex);
-ParserNode* GenerateRelopNode(int lineno,char* text);
-ParserNode* GenerateNormalTerminalNode(int lineno,SyntaxType typex);
-ParserNode* GenerateIDNode(int lineno,char* text);
+ParserTreeNode* GenerateVariableNode(SyntaxType typex,int childrenNum,...);
+ParserTreeNode* GenerateTypeNode(int lineno,char* text);
+ParserTreeNode* GenerateIntNode(int lineno,char* text);
+ParserTreeNode* GenerateFloatNode(int lineno,char* text);
+ParserTreeNode* GenerateDummyNode(SyntaxType typex);
+ParserTreeNode* GenerateRelopNode(int lineno,char* text);
+ParserTreeNode* GenerateNormalTerminalNode(int lineno,SyntaxType typex);
+ParserTreeNode* GenerateIDNode(int lineno,char* text);
+char* getIDfromOptTag(ParserTreeNode* x);
+char* getIDfromTag(ParserTreeNode* x);
+void PrintTree(ParserTreeNode* x,int d);
 #endif

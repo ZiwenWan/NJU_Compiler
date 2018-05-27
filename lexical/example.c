@@ -1,4 +1,7 @@
-int main()
-{
-	float i=1.0e;
+int inc(int x){
+	return 0;
+}
+
+int mian(){
+	inc();
 }

@@ -80,9 +80,9 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 12 "syntax.y" /* yacc.c:1909  */
+#line 13 "syntax.y" /* yacc.c:1909  */
 
-	struct ParserNode* node;
+	struct ParserTreeNode* node;
 
 #line 88 "syntax.tab.h" /* yacc.c:1909  */
 };
