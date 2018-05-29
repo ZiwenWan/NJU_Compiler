@@ -48,6 +48,7 @@ typedef struct StructList_ StructList_;
 //pedef struct FieldList_ FieldList_;
 extern StructList GlobalStructList;
 extern SymbolTableEntry GlobalSymbolTable;
+void AddStructVar2SymbolTable(int lineno,char* varname,Type typex);
 
 FieldList SearchStructList(char* structname);
 void InsertStructDef(char* structname,FieldList structfield);

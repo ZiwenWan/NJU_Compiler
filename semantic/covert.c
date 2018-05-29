@@ -63,8 +63,10 @@ FieldList CovertDefList2FieldList(ParserTreeNode* x){
 		tf=tf->next;
 	tf->next=CovertDefList2FieldList(temp->m_nextsibiling);
 	return ret;
-	
+
 }
+
+
 
 Type CovertSpecifier2Type(ParserTreeNode* x){
 	ParserTreeNode* temp=x->m_firstchild;
@@ -81,6 +83,8 @@ Type CovertSpecifier2Type(ParserTreeNode* x){
 }
 
 Type CovertStructSpecifier2Type(ParserTreeNode* x){
+
+
 	if (x->m_SyntaxType==AStructSpecifier){
 		if (GetithChild(x,2)->m_SyntaxType==ATag){
 			if (SearchStructList(GetithChild(GetithChild(x,2),1)->IDname)==NULL){
@@ -89,6 +93,8 @@ Type CovertStructSpecifier2Type(ParserTreeNode* x){
 			}
 		}
 		if (GetithChild(x,2)->m_SyntaxType==AOptTag){
+			
+			if (GetithChild(x,2)->m_childrennum!=0)
 			if (SearchStructList(GetithChild(GetithChild(x,2),1)->IDname)!=NULL){
 				printf("Error type 16 at Line %d: Duplicated name structure.\n",x->m_lineno);
 			}
@@ -107,6 +113,7 @@ Type CovertStructSpecifier2Type(ParserTreeNode* x){
 	}
 	else{
 		char* structname=getIDfromOptTag(temp);
+		//printf("!!!\n");
 		temp=temp->m_nextsibiling;
 		temp=temp->m_nextsibiling;
 		FieldList tf=CovertDefList2FieldList(temp);

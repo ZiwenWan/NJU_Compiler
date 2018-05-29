@@ -17,6 +17,36 @@ ParserTreeNode* GetithChild(ParserTreeNode* x,int n){
 	return NULL;
 }
 
+FieldList CovertArgs2FieldList(ParserTreeNode* x){
+	if (x->m_childrennum==1){
+		FieldList newfield=malloc(sizeof(struct FieldList_));
+		newfield->next=NULL;
+		newfield->type=GetExpType(GetithChild(x,1));
+		if (newfield->type==NULL) return NULL;
+		return newfield;
+	}	
+	else{
+		FieldList newfield=malloc(sizeof(struct FieldList_));
+		newfield->type=GetExpType(GetithChild(x,1));
+		if (newfield->type==NULL) return NULL;
+		newfield->next=CovertArgs2FieldList(GetithChild(x,3));
+		return newfield;
+	}
+}
+
+int FieldListcmp(FieldList a,FieldList b){
+	if (a==NULL||b==NULL) return 1;
+	FieldList temp1=a; FieldList temp2=b;
+	while (temp1!=NULL&& temp2!=NULL){
+		if (typecmp(temp1->type,temp2->type)==0)
+			return 0;
+		temp1=temp1->next;
+		temp2=temp2->next;
+	}
+	if (temp1!=NULL ||temp2!=NULL) return 0;
+	else return 1;
+}
+
 Type GetReturnType(ParserTreeNode* x){
 	ParserTreeNode* temp=x;
 	while (temp->m_SyntaxType!=AExtDef)
@@ -55,15 +85,16 @@ void ScanTree(ParserTreeNode* x){
 		if (GetithChild(x,1)->m_SyntaxType==ARETURN){
 			Type temp1=GetExpType(GetithChild(x,2));
 			Type temp2=GetReturnType(x);
-			if (temp1==NULL ||temp2==NULL)
-				return;
-			if (typecmp(temp1,temp2)==0){
-				printf("Error type 8 at Line %d: Type mismatched for return.\n",x->m_lineno);
+			if (temp1!=NULL &&temp2!=NULL){
+				if (typecmp(temp1,temp2)==0){
+					printf("Error type 8 at Line %d: Type mismatched for return.\n",x->m_lineno);
+				}
 			}
 		}
 	}
 
 	if (x->m_SyntaxType==AExp){
+		//printf("Check Exp\n");
 		/*printf("Childnum%d\n",x->m_childrennum);
 		if (x->m_childrennum==1){
 			if ((x->m_firstchild)->m_SyntaxType==AID){
@@ -150,7 +181,7 @@ int checkleftExp(ParserTreeNode* x){
 void handleExp(ParserTreeNode* x){
 	if (x->m_childrennum==1){
 		if (GetithChild(x,1)->m_SyntaxType==AID){
-		//	printf("Here\n");
+			//printf("Here %s\n",GetithChild(x,1)->IDname);
 			SymbolTableEntry tempindex;
 				//printf("Begin Search %s\n",(x->m_firstchild)->IDname);
 			tempindex=SearchSymbolTable((x->m_firstchild)->IDname,1);
@@ -286,11 +317,20 @@ void handleExp(ParserTreeNode* x){
 				printf("Error type 12 at Line %d:array index is not an integer\n",x->m_lineno);
 			}
 		}
-		/*if (GetithChild(x,1)->m_SyntaxType==AID){
+		if (GetithChild(x,1)->m_SyntaxType==AID){
 			SymbolTableEntry tempindex=SearchSymbolTable((x->m_firstchild)->IDname,0);
-			if (tempindex==NULL) return NULL;
-			return tempindex->u.Function.RetType;
+			if (tempindex==NULL){
+				printf("Error type 2 at Line %d: Undefined function '%s'\n",x->m_lineno,GetithChild(x,1)->IDname);
+			}
+			else if (tempindex->kind==1){
+				printf("Error type 11 at Line %d: '%s' is not a function.\n",x->m_lineno,GetithChild(x,1)->IDname);
+			}else
+			if (FieldListcmp(CovertArgs2FieldList(GetithChild(x,3)),tempindex->u.Function.InputType)==0){
+				printf("Error type 9 at Line %d: Function is not applicable for arguments.\n",x->m_lineno);
+
+			}
 		}
+		/*
 		if (GetithChild(x,1)->m_SyntaxType==AExp){
 			Type temp1=GetExpType(GetithChild(x,1));
 			Type temp2=GetExpType(GetithChild(x,2));
@@ -314,9 +354,23 @@ void AddExtDecList2SymbolTable(ParserTreeNode* x,Type typex){
 	ParserTreeNode* temp=x->m_firstchild;
 	AddVarDec2SymbolTable(temp,typex);
 }
+
+int checkparentstruct(ParserTreeNode* x){
+	ParserTreeNode* temp=x;
+	while (temp!=NULL){
+		if (temp->m_SyntaxType==AStructSpecifier)
+			return 1;
+		temp=temp->m_parent;
+	}
+	return 0;
+}
 void AddVarDec2SymbolTable(ParserTreeNode* x,Type typex){
+	//printf("begin AddVarDec\n");
 	if (x->m_childrennum==1){
-		AddVar2SymbolTable(x->m_lineno,(x->m_firstchild)->IDname,typex);
+		if (checkparentstruct(x)==0)
+			AddVar2SymbolTable(x->m_lineno,(x->m_firstchild)->IDname,typex);
+		else
+			AddStructVar2SymbolTable(x->m_lineno,(x->m_firstchild)->IDname,typex);
 	}
 	else{
 		ParserTreeNode* temp=x->m_firstchild;	
@@ -326,8 +380,14 @@ void AddVarDec2SymbolTable(ParserTreeNode* x,Type typex){
 		newType->kind=ARRAY;
 		newType->u.array.size=temp->int_value;
 		newType->u.array.elem=typex;
-		AddVarDec2SymbolTable(x->m_firstchild,newType);
+	//	AddVarDec2SymbolTable(x->m_firstchild,newType);
+		if (checkparentstruct(x)==0)
+			AddVar2SymbolTable(x->m_lineno,(x->m_firstchild)->IDname,typex);
+		else
+			AddStructVar2SymbolTable(x->m_lineno,(x->m_firstchild)->IDname,typex);
+
 	}
+	//printf("end AddVarDec\n");
 }
 
 
@@ -402,6 +462,24 @@ FieldList CovertVarList2FieldList(ParserTreeNode* x){
 FieldList CovertParamDec2FieldList(ParserTreeNode* x){
 	Type typex=CovertSpecifier2Type(GetithChild(x,1));
 	return AddVarDec2FieldList(GetithChild(x,2),typex,NULL);
+}
+
+void AddStructVar2SymbolTable(int lineno,char* varname,Type typex){
+	//printf("Add Var %s\n",varname);
+	SymbolTableEntry tempindex;
+	tempindex=SearchSymbolTable(varname,1);
+	if (tempindex!=NULL){
+		printf("Error type 17 at Line %d: Redefined field '%s'.\n",lineno,varname);
+	}
+	
+
+	SymbolTableEntry temp=malloc(sizeof(struct SymbolTableEntry_));
+	temp->kind=VAR;
+	temp->id=varname;
+	temp->lineno=lineno;
+	temp->u.Variable.VariableType=typex;
+	temp->next=GlobalSymbolTable;
+	GlobalSymbolTable=temp;
 }
 
 void AddVar2SymbolTable(int lineno,char* varname,Type typex){
