@@ -139,6 +139,7 @@ ParserTreeNode* GenerateTypeNode(int lineno,char* text){
 }
 
 char* getIDfromOptTag(ParserTreeNode* x){
+	if (x->m_childrennum==0) return NULL;
 	ParserTreeNode* temp=x->m_firstchild;
 	if (temp->m_NodeType==Dummy) return NULL;
 	else return temp->IDname;

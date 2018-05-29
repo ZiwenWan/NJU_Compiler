@@ -1,7 +1,6 @@
-int inc(int x){
-	return 0;
-}
-
+struct {
+	int i,j;
+	int i;
+};
 int mian(){
-	inc();
 }
