@@ -239,10 +239,10 @@ void printRelop(int x){
 }
 
 void printOperand(Operand x){
-	if (x->attr==IADDRESS)
+	/*if (x->attr==IADDRESS)
 		printf("*");
 	else if (x->attr==IREFER)
-		printf("&");
+		printf("&");*/
 	if (x->kind==ICONSTANT){
 		printf("#%d",x->ICons);
 	}
