@@ -5,6 +5,36 @@
 #include "covert.h"
 StructList GlobalStructList=NULL;
 SymbolTableEntry GlobalSymbolTable=NULL;
+void initGlobalSymbolTable(){
+	printf("Begin Init\n");
+	Type t_int=malloc(sizeof(struct Type_));
+	t_int->kind=BASIC;
+	t_int->u.basic=0;
+	SymbolTableEntry readSym=malloc(sizeof(struct SymbolTableEntry_));
+	readSym->id=malloc(strlen("read")+1);
+	strcpy(readSym->id,"read");
+	readSym->kind=FUNC;
+	readSym->u.Function.RetType=t_int;
+	readSym->u.Function.InputType=NULL;
+
+	SymbolTableEntry writeSym=malloc(sizeof(struct SymbolTableEntry_));
+	writeSym->id=malloc(strlen("write")+1);
+	strcpy(writeSym->id,"write");
+	writeSym->kind=FUNC;
+	writeSym->u.Function.RetType=t_int;
+	FieldList tempfl=malloc(sizeof(struct FieldList_));
+	tempfl->type=t_int;
+	tempfl->next=NULL;
+	tempfl->name=malloc(strlen("aaa")+1);
+	strcpy(tempfl->name,"aaa");
+	writeSym->u.Function.InputType=tempfl;
+
+	readSym->next=writeSym;
+	writeSym->next=NULL;
+	GlobalSymbolTable=readSym;
+	printf("End INit\n");
+}
+
 ParserTreeNode* GetithChild(ParserTreeNode* x,int n){
 	if (n==1) return x->m_firstchild;
 	if (n<x->m_childrennum+1){

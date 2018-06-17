@@ -72,4 +72,5 @@ int typecmp(Type t1,Type t2);
 FieldList CovertParamDec2FieldList(ParserTreeNode* x);
 void handleExp(ParserTreeNode* x);
 Type GetExpType(ParserTreeNode* x);
+void initGlobalSymbolTable();
 #endif

@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "parsertree.h"
 #include "../semantic/symbolTable.h"
+#include "../intercode/intercode.h"
+#include "../intercode/translate.h"
 extern FILE* yyin;
 int LegalFlag=1;
 int main(int argc,char** argv){
@@ -17,10 +19,18 @@ int main(int argc,char** argv){
 //	if (LegalFlag==0) 
 //		return 0;
 	//if (root!=NULL)
-	//PrintTree(root,0);
+	PrintTree(root,0);
 	//PrintStructList(GlobalStructList);
 
-//	printf("!!!\n");
+	printf("!!!\n");
+	initGlobalSymbolTable();
+	printf("!!!\n");
 	ScanTree(root);
+	printf("!!!\n");
+	InitGlobalICVarList();
+	printf("!!!!\n");
+	GlobalICList=transProgram(root);
+	//printf("Begin print!\n");
+	printICEntry(GlobalICList);
 	return 0;
 }

@@ -54,4 +54,5 @@ ParserTreeNode* GenerateIDNode(int lineno,char* text);
 char* getIDfromOptTag(ParserTreeNode* x);
 char* getIDfromTag(ParserTreeNode* x);
 void PrintTree(ParserTreeNode* x,int d);
+ParserTreeNode* GetithChild(ParserTreeNode* x,int n);
 #endif

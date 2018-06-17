@@ -1,6 +1,3 @@
-struct {
-	int i,j;
-	int i;
-};
-int mian(){
+int main(){
+	int i[10];
 }
