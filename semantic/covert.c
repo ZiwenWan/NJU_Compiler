@@ -5,6 +5,8 @@
 #include "../lexical/parsertree.h"
 
 FieldList CovertDef2FieldList(ParserTreeNode* x){
+	//printf("Here\n");
+
 	ParserTreeNode* temp=x->m_firstchild;
 	Type inittype=CovertSpecifier2Type(temp);
 	temp=temp->m_nextsibiling;
@@ -20,6 +22,7 @@ FieldList AddDec2FieldList(ParserTreeNode* x,Type y,FieldList z){
 }
 
 FieldList AddVarDec2FieldList(ParserTreeNode* x,Type y,FieldList z){
+	//printf("Begin Covert VarDec\n");
 	FieldList newField=malloc(sizeof(FieldList_));
 	if (x->m_childrennum==1){
 		//FieldList newField=malloc(sizeof(struct FieldList_));
@@ -38,6 +41,7 @@ FieldList AddVarDec2FieldList(ParserTreeNode* x,Type y,FieldList z){
 		newType->u.array.elem=y;
 		return AddVarDec2FieldList(x->m_firstchild,newType,z);
 	}
+	//printf("End Covert VarDec\n");
 }
 
 FieldList CovertDecList2FieldList(ParserTreeNode* x,Type y){

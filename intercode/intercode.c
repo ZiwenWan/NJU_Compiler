@@ -69,6 +69,7 @@ ICEntry NewICEntry(ICEntry head){
 	ICEntry t1=malloc(sizeof(struct ICEntry_));
 	InterCode t2=malloc(sizeof(struct InterCode_));
 	t1->cur=t2;
+	t1->next=NULL;
 	if (head!=NULL){
 		ICEntry temp=head;
 		while (temp->next!=NULL)
@@ -130,6 +131,7 @@ void printICEntry(ICEntry x){
 }
 
 void printInterCode(InterCode x){
+	//printf("%X\n",x);
 	//printf("%X %d\n",x,x->kind);
 	
 	if (x->kind==IFUN){
@@ -213,6 +215,11 @@ void printInterCode(InterCode x){
 		printOperand(x->PARAM.parameter);
 		printf("\n");
 	}
+	if (x->kind==IDEC){
+		printf("DEC ");
+		printOperand(x->DEC.address);
+		printf(" %d\n",x->DEC.size*4);
+	}
 }
 
 void printRelop(int x){
@@ -239,10 +246,10 @@ void printRelop(int x){
 }
 
 void printOperand(Operand x){
-	/*if (x->attr==IADDRESS)
+	if (x->attr==IADDRESS)
 		printf("*");
 	else if (x->attr==IREFER)
-		printf("&");*/
+		printf("&");
 	if (x->kind==ICONSTANT){
 		printf("#%d",x->ICons);
 	}

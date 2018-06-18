@@ -46,18 +46,13 @@ ICEntry transVarList(ParserTreeNode* x){
 }
 
 ICEntry transParamDec(ParserTreeNode* x){
-	return transVarDec(GetithChild(x,2));
+	return transVarDec(GetithChild(x,2),1);
 }
 
-ICEntry transVarDec(ParserTreeNode* x){
-	ICEntry temp_ice=NewICEntry(NULL);
-	temp_ice->cur->kind=IPARAM;
-	temp_ice->cur->PARAM.parameter=GetVarOp(GetithChild(x,1)->IDname);
-	return temp_ice;
-}
+
 
 ICEntry transCompSt(ParserTreeNode* x){
-	printf("Begin Trans Compst\n");
+	//printf("Begin Trans Compst\n");
 	ICEntry list1=transDefList(GetithChild(x,2));
 	ICEntry list2=transStmtList(GetithChild(x,3));
 	return MergeInterCode(list1,list2);
@@ -72,7 +67,53 @@ ICEntry transDefList(ParserTreeNode* x){
 	return MergeInterCode(list1,list2);
 }
 
+
+
 ICEntry transDef(ParserTreeNode* x){
+	return transDecList(GetithChild(x,2));
+}
+
+ICEntry transDecList(ParserTreeNode* x){
+	if (x->m_childrennum==1){
+		return transDec(GetithChild(x,1));
+	}
+	else{
+		ICEntry list1=transDec(GetithChild(x,1));
+		ICEntry list2=transDecList(GetithChild(x,3));
+		return MergeInterCode(list1,list2);
+	}
+}
+
+ICEntry transDec(ParserTreeNode* x){
+	if (x->m_childrennum==1){
+		return transVarDec(GetithChild(x,1),0);
+	}
+	else if (x->m_childrennum==3){
+		Operand t1=NewTOperand(IVALUE);
+		ICEntry list1=transExp(GetithChild(x,3),t1);
+		Operand t2=GetVarOp(GetithChild(GetithChild(x,1),1)->IDname);
+		ICEntry temp_ice=NewICEntry(list1);
+		temp_ice->cur->kind=IASSIGN;
+		temp_ice->cur->ASSIGN.left=t2;
+		temp_ice->cur->ASSIGN.right=t1;
+		return list1;
+	}
+}
+
+ICEntry transVarDec(ParserTreeNode* x,int isinParamDec){
+	if (x->m_childrennum==4){
+		ICEntry temp_ice=NewICEntry(NULL);
+		temp_ice->cur->kind=IDEC;
+		temp_ice->cur->DEC.size=GetithChild(x,3)->int_value;
+		temp_ice->cur->DEC.address=GetVarOp(GetithChild(GetithChild(x,1),1)->IDname);
+		return temp_ice;
+	}
+	else if (isinParamDec==1){
+		ICEntry temp_ice=NewICEntry(NULL);
+		temp_ice->cur->kind=IPARAM;
+		temp_ice->cur->PARAM.parameter=GetVarOp(GetithChild(x,1)->IDname);
+		return temp_ice;
+	}
 	return NULL;
 }
 
@@ -267,9 +308,9 @@ ICEntry transExp(ParserTreeNode* x,Operand place){
 			return list1;
 		}
 		if (GetithChild(x,2)->m_SyntaxType==AASSIGNOP){
-			Operand temp_op=GetLeftAssignOp(GetithChild(x,1));
 			Operand t1=NewTOperand(IVALUE);
 			ICEntry list1=transExp(GetithChild(x,3),t1);
+			Operand temp_op=GetLeftAssignOp(GetithChild(x,1),list1);
 			ICEntry temp_ice=NewICEntry(list1);
 			temp_ice->cur->kind=IASSIGN;
 			temp_ice->cur->ASSIGN.left=temp_op; 
@@ -343,7 +384,6 @@ ICEntry transExp(ParserTreeNode* x,Operand place){
 	}
 	if (x->m_childrennum==4&&GetithChild(x,2)->m_SyntaxType==ALB){
 		if (place==NULL) return NULL;
-		printf("Begin ALB\n");
 		Operand t1=NewTOperand(IVALUE);
 		Operand base=GetVarOp(GetithChild(GetithChild(x,1),1)->IDname);
 		base->attr=IREFER;
@@ -363,7 +403,7 @@ ICEntry transExp(ParserTreeNode* x,Operand place){
 		temp_ice->cur->BINOP.op1=t2;
 		temp_ice->cur->BINOP.op2=NewConOperand(4);
 
-		temp_ice=NewICEntry(NULL);
+		temp_ice=NewICEntry(list1);
 		temp_ice->cur->kind=IPLUS;
 		temp_ice->cur->BINOP.result=t1;
 		temp_ice->cur->BINOP.op1=base;
@@ -378,7 +418,6 @@ ICEntry transExp(ParserTreeNode* x,Operand place){
 		temp_op->attr=IADDRESS;
 
 		temp_ice->cur->ASSIGN.right=temp_op;
-		printf("End ALB\n");
 		return list1;
 	}
 }
@@ -407,9 +446,41 @@ ICEntry transArgs(ParserTreeNode* x,ArgEntry targlist){
 	}
 }
 
-Operand GetLeftAssignOp(ParserTreeNode* x){
+Operand GetLeftAssignOp(ParserTreeNode* x,ICEntry list){
 	if (x->m_childrennum==1 && GetithChild(x,1)->m_SyntaxType==AID){
 		return GetVarOp(GetithChild(x,1)->IDname);
+	}
+	else if (x->m_childrennum==4 && GetithChild(x,2)->m_SyntaxType==ALB){
+
+		Operand t1=NewTOperand(IVALUE);
+		Operand base=GetVarOp(GetithChild(GetithChild(x,1),1)->IDname);
+		base->attr=IREFER;
+		ICEntry temp_ice=NewICEntry(list);
+		temp_ice->cur->kind=IASSIGN;
+		temp_ice->cur->ASSIGN.left=t1;
+		temp_ice->cur->ASSIGN.right=base;
+
+		Operand t2=NewTOperand(IVALUE);
+		ICEntry list2=transExp(GetithChild(x,3),t2);
+
+		MergeInterCode(list,list2);
+		temp_ice=NewICEntry(list);
+		temp_ice->cur->kind=ISTAR;
+		temp_ice->cur->BINOP.result=t2;
+		temp_ice->cur->BINOP.op1=t2;
+		temp_ice->cur->BINOP.op2=NewConOperand(4);
+
+		temp_ice=NewICEntry(list);
+		temp_ice->cur->kind=IPLUS;
+		temp_ice->cur->BINOP.result=t1;
+		temp_ice->cur->BINOP.op1=base;
+		temp_ice->cur->BINOP.op2=t2;
+
+		Operand temp_op=malloc(sizeof(struct Operand_));
+		temp_op->kind=t1->kind;
+		temp_op->TIndex=t1->TIndex;
+		temp_op->attr=IADDRESS;
+		return temp_op;
 	}
 }
 

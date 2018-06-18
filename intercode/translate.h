@@ -16,11 +16,13 @@ ICEntry transStmtList(ParserTreeNode* x);
 ICEntry transStmt(ParserTreeNode* x);
 ICEntry transExp(ParserTreeNode* x,Operand place);
 ICEntry transCond(ParserTreeNode* x,int label_true,int label_false);
-Operand GetLeftAssignOp(ParserTreeNode* x);
+Operand GetLeftAssignOp(ParserTreeNode* x,ICEntry);
 
 ICEntry transArgs(ParserTreeNode* x,ArgEntry targlist);
 void InsertOp2ArgList(Operand x,ArgEntry dst);
-ICEntry transVarDec(ParserTreeNode* x);
+ICEntry transVarDec(ParserTreeNode* x,int);
 ICEntry transParamDec(ParserTreeNode* x);
 ICEntry transVarList(ParserTreeNode* x);
+ICEntry transDecList(ParserTreeNode* x);
+ICEntry transDec(ParserTreeNode* x);
 #endif

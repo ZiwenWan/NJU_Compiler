@@ -6,7 +6,7 @@
 StructList GlobalStructList=NULL;
 SymbolTableEntry GlobalSymbolTable=NULL;
 void initGlobalSymbolTable(){
-	printf("Begin Init\n");
+	//printf("Begin Init\n");
 	Type t_int=malloc(sizeof(struct Type_));
 	t_int->kind=BASIC;
 	t_int->u.basic=0;
@@ -32,7 +32,7 @@ void initGlobalSymbolTable(){
 	readSym->next=writeSym;
 	writeSym->next=NULL;
 	GlobalSymbolTable=readSym;
-	printf("End INit\n");
+	//printf("End INit\n");
 }
 
 ParserTreeNode* GetithChild(ParserTreeNode* x,int n){
@@ -108,7 +108,9 @@ void ScanTree(ParserTreeNode* x){
 	if (x->m_SyntaxType==ADef){
 		Type temptype=CovertSpecifier2Type(GetithChild(x,1));
 		//PrintType(temptype);
+		//printf("Middle Covert Def\n");
 		AddDecList2SymbolTable(GetithChild(x,2),temptype);
+		//printf("End Covert Def\n");
 	}
 
 	if (x->m_SyntaxType==AStmt){
@@ -403,6 +405,7 @@ void AddVarDec2SymbolTable(ParserTreeNode* x,Type typex){
 			AddStructVar2SymbolTable(x->m_lineno,(x->m_firstchild)->IDname,typex);
 	}
 	else{
+		//printf("Here AddVarDec\n");
 		ParserTreeNode* temp=x->m_firstchild;	
 		temp=temp->m_nextsibiling;
 		temp=temp->m_nextsibiling;
@@ -411,10 +414,12 @@ void AddVarDec2SymbolTable(ParserTreeNode* x,Type typex){
 		newType->u.array.size=temp->int_value;
 		newType->u.array.elem=typex;
 	//	AddVarDec2SymbolTable(x->m_firstchild,newType);
+		//printf("Here Mid ADDVARDEc\n");
+		//PrintType(typex);
 		if (checkparentstruct(x)==0)
-			AddVar2SymbolTable(x->m_lineno,(x->m_firstchild)->IDname,typex);
+			AddVarDec2SymbolTable(x->m_firstchild,newType);
 		else
-			AddStructVar2SymbolTable(x->m_lineno,(x->m_firstchild)->IDname,typex);
+			AddStructVar2SymbolTable(x->m_lineno,(x->m_firstchild)->IDname,newType);
 
 	}
 	//printf("end AddVarDec\n");

@@ -1,3 +1,5 @@
 int main(){
-	int i[10];
+	int n=1;
+	write(n);
+	return 0;
 }

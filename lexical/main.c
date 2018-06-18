@@ -19,16 +19,14 @@ int main(int argc,char** argv){
 //	if (LegalFlag==0) 
 //		return 0;
 	//if (root!=NULL)
-	PrintTree(root,0);
+	fclose(f);
+	//PrintTree(root,0);
 	//PrintStructList(GlobalStructList);
 
-	printf("!!!\n");
 	initGlobalSymbolTable();
-	printf("!!!\n");
 	ScanTree(root);
-	printf("!!!\n");
+	//printf("End ScanTree\n");
 	InitGlobalICVarList();
-	printf("!!!!\n");
 	GlobalICList=transProgram(root);
 	//printf("Begin print!\n");
 	printICEntry(GlobalICList);
