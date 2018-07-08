@@ -5,6 +5,7 @@
 #include "../semantic/symbolTable.h"
 #include "../intercode/intercode.h"
 #include "../intercode/translate.h"
+#include "../spim/spim.h"
 extern FILE* yyin;
 int LegalFlag=1;
 int main(int argc,char** argv){
@@ -28,7 +29,7 @@ int main(int argc,char** argv){
 	//printf("End ScanTree\n");
 	InitGlobalICVarList();
 	GlobalICList=transProgram(root);
-	//printf("Begin print!\n");
 	printICEntry(GlobalICList);
+	MachineCodeGenerator(argv[2]);
 	return 0;
 }

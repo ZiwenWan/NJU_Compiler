@@ -156,7 +156,7 @@ ICEntry transStmt(ParserTreeNode* x){
 		}
 		if (GetithChild(x,1)->m_SyntaxType==AWHILE){
 			int l1=NewLabel(); int l2=NewLabel(); int l3=NewLabel();
-			ICEntry list1=transCond(GetithChild(x,3),l1,l2);
+			ICEntry list1=transCond(GetithChild(x,3),l2,l3);
 			ICEntry list2=transStmt(GetithChild(x,5));
 			ICEntry ret=NewICEntry(NULL);
 			ret->cur->kind=ILABELDEC;
@@ -406,7 +406,7 @@ ICEntry transExp(ParserTreeNode* x,Operand place){
 		temp_ice=NewICEntry(list1);
 		temp_ice->cur->kind=IPLUS;
 		temp_ice->cur->BINOP.result=t1;
-		temp_ice->cur->BINOP.op1=base;
+		temp_ice->cur->BINOP.op1=t1;
 		temp_ice->cur->BINOP.op2=t2;
 
 		temp_ice=NewICEntry(list1);
@@ -473,7 +473,7 @@ Operand GetLeftAssignOp(ParserTreeNode* x,ICEntry list){
 		temp_ice=NewICEntry(list);
 		temp_ice->cur->kind=IPLUS;
 		temp_ice->cur->BINOP.result=t1;
-		temp_ice->cur->BINOP.op1=base;
+		temp_ice->cur->BINOP.op1=t1;
 		temp_ice->cur->BINOP.op2=t2;
 
 		Operand temp_op=malloc(sizeof(struct Operand_));
